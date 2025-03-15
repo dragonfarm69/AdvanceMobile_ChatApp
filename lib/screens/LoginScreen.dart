@@ -53,25 +53,20 @@ class LoginScreen extends StatelessWidget {
             
             // Header
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios, color: Colors.blue),
-                    onPressed: () {
-                      // Navigate back to the previous screen
-                      Navigator.pop(context);
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "Login",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                "Register",
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                ),
+              ],
               ),
             ),
 
