@@ -305,16 +305,28 @@ class ChatScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+TextField(
+  decoration: InputDecoration(
+    hintText: "Say something...",
+    hintStyle: TextStyle(color: Colors.grey),
+    border: InputBorder.none,
+    prefixIcon: Icon(Icons.search, color: Colors.grey),
+  ),
+  style: TextStyle(color: Colors.grey),
+),
+                  const SizedBox(height: 16),
                   Text(
-                    "Try saying...",
+                    "Suggestions",
                     style: TextStyle(
-                      color: Colors.grey,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _buildSuggestionButton("Generate a stylish and interactive game of life"),
+                  _buildSuggestionButton("Create a simple and responsive weather app using Flutter"),
                   const SizedBox(height: 12),
-                  _buildSuggestionButton("Create a functional synthwave-inspired piano app with responsive touch using html"),
+                  _buildSuggestionButton("Build a beautiful and interactive chat app with real-time messaging"
+)
                 ],
               ),
             ),

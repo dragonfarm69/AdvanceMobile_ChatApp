@@ -68,6 +68,73 @@ class RegisterScreen extends StatelessWidget {
               ],
               ),
             ),
+
+            const SizedBox(height: 16),
+
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Color(0xFF212121),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                    Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                      'assets/poe-color.png',
+                      height: 50,
+                      ),
+                      const SizedBox(width: 8),
+                      Image.asset(
+                      'assets/poe-text.png',
+                      height: 50,
+                      ),
+                    ],
+                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple, // Background color
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/login'); // Navigate to login screen
+                        },
+                        child: Text(
+                          'Login',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple, // Background color
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/register');
+                        },
+                        child: Text(
+                          'Register',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
