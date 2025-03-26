@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:ai_chat_app/features/services/authentication.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  AuthService authService = AuthService();
+
+  bool isLoggedIn = await authService.checkIfLoggedIn();
+  runApp(MyApp(isLoggedIn: isLoggedIn,));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn});
 
   // This widget is the root of your application.
   @override
