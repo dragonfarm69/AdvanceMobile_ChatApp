@@ -9,52 +9,11 @@ class RegisterScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Top bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Text(
-                    "09:29",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  Row(
-                    children: [
-                      Icon(Icons.signal_cellular_alt, size: 16),
-                      const SizedBox(width: 4),
-                      Icon(Icons.wifi, size: 16),
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          "27",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      Icon(Icons.battery_3_bar, size: 16),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
             // Title display
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                 "Register",
