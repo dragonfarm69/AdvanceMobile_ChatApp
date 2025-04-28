@@ -1,7 +1,45 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:ai_chat_app/features/services/authentication.dart';
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class LoginScreen extends StatefulWidget{
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  void _handleLogin() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    final auth = AuthService();
+    final result = await auth.signIn(
+      _emailController.text.trim(), 
+      _passwordController.text.trim()
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result != null) {
+      // Handle successful login, e.g., navigate to home screen
+      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+    } else {
+      // Handle login error, e.g., show a snackbar or alert dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed. Please try again.')),
+      );
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -41,9 +79,10 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 children: [
                   TextField(
+                    controller: _emailController,
                     style: TextStyle(color: const Color.fromARGB(255, 68, 68, 68)),
                     decoration: InputDecoration(
-                      hintText: 'Username or Email',
+                      hintText: 'Email',
                       filled: true,
                       fillColor: const Color.fromARGB(255, 255, 255, 255),
                       border: OutlineInputBorder(
@@ -53,6 +92,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: _passwordController,
                     style: TextStyle(color: const Color.fromARGB(255, 68, 68, 68)),
                     obscureText: true,
                     decoration: InputDecoration(
@@ -67,7 +107,7 @@ class LoginScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // Handle login logic
+                      _isLoading ? null : _handleLogin;
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: const Color.fromARGB(255, 171, 171, 171), 
@@ -77,7 +117,9 @@ class LoginScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    child: Text('Login'),
+                    child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Login"),
                   ),
                   SizedBox(height: 20),
                   TextButton(

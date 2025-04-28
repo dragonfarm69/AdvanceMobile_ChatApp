@@ -5,8 +5,6 @@ import 'package:ai_chat_app/features/services/token_store.dart';
 class AuthService{
   final String baseUrl = 'https://auth-api.dev.jarvis.cx/';
 
-
-
   Future<Future<String>?> signIn(String email, String password) async {
   final Map<String, String> headers = {
     'X-Stack-Access-Type': 'client',

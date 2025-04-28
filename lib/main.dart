@@ -5,8 +5,8 @@ import './screens/Home Screen/Home.dart';
 import './screens/Setting Screen/Setting.dart';
 import './screens/Bots Screen/bot.dart';
 import './screens/Profile Screen/profile.dart';
-import 'package:ai_chat_app/screens/LoginScreen.dart';
-import 'package:ai_chat_app/screens/RegisterScreen.dart';
+import './screens/LoginScreen.dart';
+import './screens/RegisterScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,18 +32,29 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const HomeScreen(),
+        '/': (context) => isLoggedIn ? const HomeScreen() : const LoginScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/chat': (context) {
-          // Cast the arguments to a Map
-          final args =
-              ModalRoute.of(context)!.settings.arguments
-                  as Map<String, String>?;
-          // Extract the text
-          final text = args?['initialMessage'] ?? '';
-          // Pass the text to ChatScreen
-          return ChatScreen(initialMessage: text);
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+
+          // Check if conversationId is provided, otherwise generate a new one
+          final conversationId = args!= null && args['conversationId'] != null ? args['conversationId'] : UniqueKey().toString(); // Generate a new conversation ID if not provided;
+
+          final message = args != null && args['message'] != null ? args['message'] as String : ''; // Extract the message if provided
+          // Extract the initial message if provided
+          final content = args != null && args['content'] != null
+              ? args['content'] as String
+              : '';
+          final title = args != null && args['title'] != null ? args['title'] as String : 'Chat'; // Extract the title if provided
+          // Pass the conversationId and text to ChatScreen
+          if (args != null && args['title'] != null) {
+            return ChatScreen(title: title, conversationId: conversationId);
+          }
+          
+          else {
+            return ChatScreen(conversationId: conversationId, message: message, content: content);
+          }
         },
         '/setting': (context) => const SettingsScreen(),
         '/bots': (context) => const BotsScreen(),

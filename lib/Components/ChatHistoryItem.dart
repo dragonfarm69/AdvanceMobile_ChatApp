@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 Widget chatHistoryItem({
-  required String modelName,
   required String title,
   required String date,
   required context,
-  String subtitle = '',
+  required String conversationId,
 }) {
   return Container(
     decoration: BoxDecoration(
@@ -15,15 +14,9 @@ Widget chatHistoryItem({
     ),
     child: ListTile(
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            modelName,
-            style: TextStyle(color: Colors.grey[400], fontSize: 14),
-          ),
-          Text(date, style: TextStyle(color: Colors.grey[400], fontSize: 14)),
-        ],
+      title: Align(
+        alignment: Alignment.centerRight,
+        child: Text(date, style: TextStyle(color: Colors.grey[400], fontSize: 14)),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,21 +30,11 @@ Widget chatHistoryItem({
               fontWeight: FontWeight.bold,
             ),
           ),
-          if (subtitle.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                subtitle,
-                style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
         ],
       ),
       onTap: () {
         // Handle navigation to the specific chat
-        Navigator.pushNamed(context, '/chat', arguments: {'chatTitle': title});
+        Navigator.pushNamed(context, '/chat', arguments: {'conversationId': conversationId, 'title': title});
       },
     ),
   );
