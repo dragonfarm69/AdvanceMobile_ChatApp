@@ -46,13 +46,6 @@ class MyApp extends StatelessWidget {
           final content = args != null && args['content'] != null
               ? args['content'] as String
               : '';
-          final title = args != null && args['title'] != null ? args['title'] as String : 'Chat'; // Extract the title if provided
-          // Pass the conversationId and text to ChatScreen
-          if (args != null && args['title'] != null) {
-            return ChatScreen(title: title, conversationId: conversationId);
-          }
-          
-          else {
             return ChatScreen(conversationId: conversationId, message: message, content: content);
           }
         },

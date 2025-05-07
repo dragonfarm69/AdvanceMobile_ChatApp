@@ -9,7 +9,7 @@ import 'package:ai_chat_app/features/services/chat_token.dart'; // Ensure this i
 class AiChat {
     ChatToken chatToken = ChatToken();
     final String baseUrl = 'https://api.dev.jarvis.cx';
-    Future<Map<String, dynamic>?> sendMessage(String content, Assistant assistant, String id) async {
+    Future<Map<String, dynamic>?> sendMessage(String content, Assistant assistant, String id, List<ChatMessage> history) async {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         final String? accessToken = prefs.getString('access_token');
         
@@ -17,8 +17,7 @@ class AiChat {
             throw Exception('Access token is not available');
         }
 
-        List<ChatMessage> message = await getChatForMessage(id) ?? [];
-        List<Map<String, dynamic>> messages = message.map((msg) => msg.toJson()).toList();
+        List<Map<String, dynamic>> messages = history.map((msg) => msg.toJson()).toList();
 
         Map<String, dynamic> assistantJson = {
             'id': assistant.id,
@@ -27,7 +26,8 @@ class AiChat {
         };
 
         for (var msg in messages) {
-            msg['assistant'] = assistantJson;
+            msg['files'] = [];
+            msg['assistant'] = assistant.toJson();
         }
 
         final Map<String, String> headers = {
@@ -35,25 +35,22 @@ class AiChat {
             'Content-Type': 'application/json',
         };
 
-        var request = http.Request('POST', Uri.parse('$baseUrl/api/v1/chat'));
-        request.body = json.encode({
+        var response = await http.post(
+            Uri.parse('$baseUrl/api/v1/chat'),
+            headers: headers,
+            body: json.encode({
             "content": content,
             "files": [],
             "metadata": {
                 "conversation": {
-                    "messages": message,
+                "messages": messages,
                 }
             },
             "assistant": assistant.toJson(),
-        });
-
-        request.headers.addAll(headers);
-
-        var response = await request.send();
+            }),
+        );
         if (response.statusCode == 200) {
-            final data = await response.stream.bytesToString();
-
-            final jsonResp = jsonDecode(data);
+            final jsonResp = jsonDecode(response.body);
 
             final reply = jsonResp['message'];
 
@@ -61,7 +58,7 @@ class AiChat {
                 return null;
             }
 
-            ChatToken.deductTokens(assistant.tokenCost);
+            ChatToken.setTokens(jsonResp['remainingUsage']);
 
             return jsonResp;
         } else {
@@ -83,14 +80,13 @@ class AiChat {
             'Authorization': 'Bearer $accessToken',
         };
 
-        var request = http.Request('GET', Uri.parse('$baseUrl/api/v1/ai-chat/conversations/$chatId/messages?assistantId=gpt-4o-mini&assistantModel=dify'));
+        var response = await http.get(
+            Uri.parse('$baseUrl/api/v1/ai-chat/conversations/$chatId/messages?assistantId=gpt-4o-mini&assistantModel=dify'),
+            headers: headers,
+        );
 
-        request.headers.addAll(headers);
-
-        var response = await request.send();
         if (response.statusCode == 200) {
-            final data = await response.stream.bytesToString();
-            final jsonResp = jsonDecode(data);
+            final jsonResp = jsonDecode(response.body);
             final items = jsonResp['items'] as List<dynamic>;
 
             for (var item in items) {
@@ -140,7 +136,7 @@ class AiChat {
                 chats.add(Conversation(
                     id: item['id'],
                     title: item['title'],
-                    createdAt: DateTime.fromMillisecondsSinceEpoch(item['createdAt'] * 1000),
+                    createdAt: DateTime.parse(item['createdAt']);,
                 ));
             }
 

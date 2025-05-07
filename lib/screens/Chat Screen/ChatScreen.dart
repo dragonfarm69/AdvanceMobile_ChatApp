@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../../features/services/ai_chat.dart';
 import '../../features/model/chat_message.dart';
 import '../../features/model/assistant.dart';
+import '../../Components/PromptMenu.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String? title;
   final String? content;
   final String? message; // holds the passed message Default value for selected assistant
   final String conversationId; // holds the passed conversation ID
   // Removed redundant final variable declaration
-  const ChatScreen({super.key, this.title, this.content, this.message, required this.conversationId});
+  const ChatScreen({super.key, this.content, this.message, required this.conversationId});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -17,13 +17,15 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   List<ChatMessage> messages = []; // Holds the chat messages
+  final LayerLink _layerLink = LayerLink();
   final TextEditingController _messageController = TextEditingController(); // Controller for the message input field
-  String? get title => widget.title; // holds the passed title
   String? get content => widget.content;
   String? get message => widget.message; // holds the passed message
   String get conversationId => widget.conversationId; // holds the passed conversation ID
   bool _isLoading = false;
   AiChat chat = AiChat(); // Instance of the Chat class
+
+  PromptMenu promptMenu = PromptMenu(); // Instance of the PromptMenu class
 
   List<Map<String, Assistant>> assistants = [
     {"assistant": Assistant(name: 'Claude 3 Haiku', id: 'claude-3-haiku-20240307', model: 'dify', tokenCost: 1)},
@@ -83,11 +85,17 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: 
-          Text(
-            text,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Colors.blue,
+            borderRadius: BorderRadius.circular(12),
+          ),
+            child: Text(
+            text.trim(),
             style: const TextStyle(fontSize: 16, color: Colors.black),
           ),
+        ),
       ),
     );
   }
@@ -105,7 +113,7 @@ class _ChatScreenState extends State<ChatScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
             child: Text(
-            text,
+            text.trim(),
             style: const TextStyle(fontSize: 16, color: Colors.black),
           ),
         ),
@@ -121,73 +129,16 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             // Expanded scrollable area for main content
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Top bar (content removed for brevity)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      // Top bar content here...
-                    ),
-                    // Header
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                            IconButton(
-                              icon: const Icon(Icons.arrow_back_ios, color: Colors.blue),
-                              onPressed: () {
-                                Navigator.pushReplacementNamed(context, '/home');
-                              },
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6C63FF),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-                            ),
-                          const SizedBox(width: 8),
-                          Text(
-                            title != null ? title! : content != null ? content! : 'New Chat',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            icon: const Icon(Icons.edit_square, color: Colors.grey),
-                            onPressed: () {},
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.ios_share, color: Colors.grey),
-                            onPressed: () {},
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // User text bubble (aligned right)
-                    ListView.builder(
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        final message = messages[index];
-                        if (message.role == 'assistant') {
-                          return _buildAIBubble(message.content, selectedAssistantDetails.name);
-                        } else {
-                          return _buildUserBubble(message.content);
-                        }
-                      },
-                    ),
-                    // Add more messages here if needed
-                  ],
-                ),
+              child: ListView.builder(
+                itemCount: messages.length,
+                itemBuilder: (context, index) {
+                  final message = messages[index];
+                  if (message.role == 'assistant') {
+                    return _buildAIBubble(message.content, selectedAssistantDetails.name); // AI message bubble
+                  } else {
+                    return _buildUserBubble(message.content); // User message bubble
+                  }
+                },
               ),
             ),
 
@@ -230,24 +181,33 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               child: Row(
                 children: [
-                  IconButton(
-                  icon: const Icon(Icons.category, color: Colors.green),
-                  onPressed: () {},
-                  ),
                   Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                    hintText: "Message",
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: InputBorder.none,
-                    ),
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                  ),
-                  IconButton(
-                  icon: const Icon(Icons.add_circle, color: Colors.white),
-                  onPressed: () {},
+                    child: CompositedTransformTarget(
+                      link: _layerLink,
+                      child: TextField(
+                        controller: _messageController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: "Type a message...",
+                          hintStyle: const TextStyle(color: Colors.white54),
+                          filled: true,
+                          fillColor: const Color(0xFF2C003E),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+
+                          onChanged: (text) {
+                            if (text.split(' ').last == '/') {
+                              promptMenu.show(context: context, link: _layerLink, controller: _messageController);
+                            }
+                            else {
+                              promptMenu.hide();
+                            }
+                          }
+                        ),
+                      ),
+                    ) 
                   ),
                   _isLoading
                     ? const Padding(

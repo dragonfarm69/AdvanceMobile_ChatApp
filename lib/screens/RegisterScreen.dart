@@ -15,13 +15,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     bool _isLoading = false;
 
     void _handleRegister() async {
-      setState(() {
-        _isLoading = true;
-      });
-
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
       String passwordConfirmation = _passwordConfirmationController.text.trim();
+      if (email.isEmpty || password.isEmpty || passwordConfirmation.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please fill in all fields.')),
+        );
+        return;
+      }
+
       if (password != passwordConfirmation) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Passwords do not match.')),
@@ -31,6 +34,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
         return;
       }
+
+      setState(() {
+        _isLoading = true;
+      });
       
       final auth = AuthService();
       final result = await auth.signUp(
@@ -93,6 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextField(
                     style: TextStyle(color: const Color.fromARGB(255, 68, 68, 68)),
                     decoration: InputDecoration(
+                      controller: _emailController,
                       hintText: 'Email',
                       filled: true,
                       fillColor: const Color.fromARGB(255, 255, 255, 255),
@@ -106,6 +114,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: TextStyle(color: const Color.fromARGB(255, 68, 68, 68)),
                     obscureText: true,
                     decoration: InputDecoration(
+                      controller: _passwordController,
                       hintText: 'Password',
                       filled: true,
                       fillColor: Colors.white,
@@ -114,10 +123,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                   ),
+                  SizedBox(height: 20),
                   TextField(
                     style: TextStyle(color: const Color.fromARGB(255, 68, 68, 68)),
                     obscureText: true,
                     decoration: InputDecoration(
+                      controller: _passwordConfirmationController,
                       hintText: 'Password Confirmation',
                       filled: true,
                       fillColor: const Color.fromARGB(255, 255, 255, 255),

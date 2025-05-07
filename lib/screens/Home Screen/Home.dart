@@ -2,9 +2,11 @@ import 'package:ai_chat_app/features/model/assistant.dart';
 import 'package:ai_chat_app/features/model/conversation.dart';
 import 'package:flutter/material.dart';
 import '../../Components/ChatHistoryItem.dart';
+import '../../Components/PromptMenu.dart';
 import '../../Components/botCard.dart';
 import '../../Components/MenuSideBar.dart';
 import '../../features/services/ai_chat.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,13 +33,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   bool _isSearching = false;
+  PromptMenu promptMenu = PromptMenu();
 
   // Sample chat history data
   List<Conversation> chatHistory = [];
 
   Future<void> _loadChat() async {
     // Load chat data if needed
-    chatHistory = await chatService.getAllChats() ?? [];
+    final history = await chatService.getAllChats() ?? [];
+    setState(() {
+      chatHistory = history; // Update the state with loaded chat history
+    });
   }
 
   @override
@@ -61,9 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
       selectedAssistant = assistants.first['assistant']!.id; // Set default to the first assistant's id
       selectedAssistantDetails = assistants.first['assistant']!; // Set default to the first assistant's details
     }
-    setState(() {
-      _loadChat();
-    });
+
+    _loadChat();
   }
 
   Future<void> _sendMessage() async {
@@ -150,91 +155,83 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       child: _isSearching
-                          ? Container(
-                              key: const ValueKey('searchField'),
-                              height: 44,
-                              child: TextField(
-                                focusNode: _searchFocusNode,
-                                textAlignVertical: TextAlignVertical.center,
-                                style: const TextStyle(color: Colors.white),
-                                decoration: InputDecoration(
-                                  hintText: "Search chats...",
-                                  hintStyle: TextStyle(color: Colors.grey[400]),
-                                  fillColor: const Color(0xFF212121),
-                                  filled: true,
-                                  isDense: true,
-                                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                                  suffixIcon: IconButton(
-                                    icon: const Icon(Icons.close, color: Colors.grey, size: 20),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isSearching = false;
-                                      });
-                                    },
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        ? Container(
+                            key: const ValueKey('searchField'),
+                            height: 44,
+                            child: TextField(
+                              focusNode: _searchFocusNode,
+                              textAlignVertical: TextAlignVertical.center,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                hintText: "Search chats...",
+                                hintStyle: TextStyle(color: Colors.grey[400]),
+                                fillColor: const Color(0xFF212121),
+                                filled: true,
+                                isDense: true,
+                                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                                suffixIcon: IconButton(
+                                  icon: const Icon(Icons.close, color: Colors.grey, size: 20),
+                                  onPressed: () {
+                                    setState(() {
+                                      _isSearching = false;
+                                    });
+                                  },
                                 ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 8),
                               ),
-                            )
-                          : const SizedBox(
-                              key: ValueKey('empty'),
                             ),
+                          )
+                        : const SizedBox(
+                            key: ValueKey('empty'),
+                          ),
                     ),
                   ),
                   
                   // Search icon button
-                  IconButton(
-                    icon: const Icon(Icons.search, color: Colors.white),
-                    onPressed: () {
-                      setState(() {
-                        _isSearching = true;
-                      });
-                      _searchFocusNode.requestFocus();
-                    },
-                    tooltip: 'Search',
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.search, color: Colors.white),
+                  onPressed: () {
+                          setState(() {
+                            _isSearching = true;
+                          });
+                          _searchFocusNode.requestFocus();
+                        },
+                        tooltip: 'Search',
+                      ),
                 ],
-              ),
-            ),
+                  ),
+                ),
 
             // Bot cards carousel with overflow protection
-            Container(
-              height: 140, // Fixed height to prevent vertical overflow
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                physics: const BouncingScrollPhysics(),
-                children: [
-                  buildBotCard(
-                    icon: Icons.smart_toy,
-                    name: "General AI",
-                    description: "Chat with a general purpose assistant",
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                    "AI Chat Assistants",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[300],
+                    ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                    "Choose an assistant to start your conversation",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                    ),
+                  ],
                   ),
-                  const SizedBox(width: 12),
-                  buildBotCard(
-                    icon: Icons.code,
-                    name: "Code Assistant",
-                    description: "Help with programming tasks",
-                  ),
-                  const SizedBox(width: 12),
-                  buildBotCard(
-                    icon: Icons.school,
-                    name: "Learning Bot",
-                    description: "Your personal study companion",
-                  ),
-                  const SizedBox(width: 12),
-                  buildBotCard(
-                    icon: Icons.image,
-                    name: "Image Creator",
-                    description: "Generate creative visuals",
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
 
             // Chat history section label
@@ -297,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       return chatHistoryItem(
                         conversationId: chat.id,
                         title: chat.title,
-                        date: "${chat.createdAt.year}-${chat.createdAt.month.toString().padLeft(2, '0')}-${chat.createdAt.day.toString().padLeft(2, '0')}",
+                        date: "${chat.createdAt.year}-${chat.createdAt.month.toString().padLeft(2, '0')}-${chat.createdAt.day.toString().padLeft(2, '0')} ${chat.createdAt.hour.toString().padLeft(2, '0')}:${chat.createdAt.minute.toString().padLeft(2, '0')}",
                         context: context,
                       );
                     },
@@ -307,29 +304,36 @@ class _HomeScreenState extends State<HomeScreen> {
             Container( // Assistant selection dropdown
               margin: const EdgeInsets.symmetric(horizontal: 16),
               child: DropdownButtonFormField<String>(
-                value: selectedAssistant,
-                hint: const Text("Select Assistant"),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey.shade200,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              value: selectedAssistant,
+              hint: const Text(
+                "Select Assistant",
+                style: TextStyle(color: Colors.white),
+              ),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF4A148C), // Dark purple color
+                border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
                 ),
-                items: assistants.map((assistant) {
-                  return DropdownMenuItem<String>(
-                    value: assistant["assistant"]?.id,
-                    child: Text(assistant["assistant"]!.name),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedAssistant = value!;
-                    selectedAssistantDetails = assistants.firstWhere((assistant) => assistant["assistant"]!.id == value)["assistant"]!;
-                  });
-                },
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              ),
+              dropdownColor: const Color(0xFF4A148C), // Dark purple dropdown background
+              items: assistants.map((assistant) {
+                return DropdownMenuItem<String>(
+                value: assistant["assistant"]?.id,
+                child: Text(
+                  assistant["assistant"]!.name,
+                  style: const TextStyle(color: Colors.white), // White text for better contrast
+                ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                selectedAssistant = value!;
+                selectedAssistantDetails = assistants.firstWhere((assistant) => assistant["assistant"]!.id == value)["assistant"]!;
+                });
+              },
               ),
             ),
 
@@ -353,38 +357,34 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                     // Select model
 
-                    Expanded( // Enter chat
-                      child: Container(
-                      constraints: const BoxConstraints(maxHeight: 120),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF212121),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
+                    Expanded(
+                      child: CompositedTransformTarget(
+                      link: _layerLink,
                       child: TextField(
                         controller: _messageController,
-                        maxLines: null,
-                        textAlignVertical: TextAlignVertical.center,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                        hintText: "Message...",
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.mic, color: Colors.grey),
-                          onPressed: () {},
-                          tooltip: 'Voice input',
-                        ),
+                          hintText: "Type a message...",
+                          hintStyle: const TextStyle(color: Colors.white54),
+                          filled: true,
+                          fillColor: const Color(0xFF2C003E),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+
+                          onChanged: (text) {
+                            if (text.split(' ').last == '/') {
+                              promptMenu.show(context: context, link: _layerLink, controller: _messageController);
+                            }
+                            else {
+                              promptMenu.hide();
+                            }
+                          }
                         ),
                       ),
-                      ),
-                    ),
+                    ) 
+                  ),
                     const SizedBox(width: 8),
                     Container(
                       height: 48,

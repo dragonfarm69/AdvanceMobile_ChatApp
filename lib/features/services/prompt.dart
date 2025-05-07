@@ -12,6 +12,7 @@ class PromptManage{
       required String content,
       required String description,
       bool isPublic = false,
+      bool isFavorite = false,
     }) async {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         final String? accessToken = prefs.getString('access_token');
@@ -35,6 +36,7 @@ class PromptManage{
             'content': content,
             'description': description,
             'isPublic': isPublic,
+            'isFavorite': isFavorite,
         });
 
         var response = await request.send();
@@ -70,18 +72,13 @@ class PromptManage{
                 'offset': offset.toString(),
                 'limit': limit.toString(),
                 'isFavorite': isFavorite.toString(),
-                'isPublic': isPublic.toString(),
+                if (isFavorite == false) 'isPublic': isPublic.toString(),
             },
         );
 
-        var request = http.Request('GET', uri);
-        request.headers.addAll(headers);
-
-        var response = await request.send();
+        final response = await http.get(uri, headers: headers);
         if (response.statusCode == 200) {
-            final data = await response.stream.bytesToString();
-
-            final jsonResp = jsonDecode(data);
+            final jsonResp = jsonDecode(response.body);
             final items = jsonResp['items'];
             final List<Prompt> prompts = [];
             for (var item in items) {
@@ -90,12 +87,14 @@ class PromptManage{
                 final content = item['content'] as String;
                 final description = item['description'] as String;
                 final isPublic = item['isPublic'] as bool? ?? false;
+                final isFavorite = item['isFavorite'] as bool? ?? false;
                 final prompt = Prompt(
                     id: id,
                     title: title,
                     content: content,
                     description: description,
                     isPublic: isPublic,
+                    isFavorite: isFavorite,
                 );
 
                 prompts.add(prompt);
@@ -176,7 +175,7 @@ class PromptManage{
         }
     }
 
-    Future<void> addFavoritePrompt(String id) async {
+    Future<bool> addFavoritePrompt(String id) async {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         final String? accessToken = prefs.getString('access_token');
         
@@ -191,18 +190,20 @@ class PromptManage{
 
         final uri = Uri.parse('$baseUrl/api/v1/prompts/$id/favorite');
 
-        var request = http.Request('POST', uri);
-        request.headers.addAll(headers);
-
-        var response = await request.send();
+        final response = await http.post(
+          uri,
+          headers: headers,
+        );
         if (response.statusCode == 200) {
-            debugPrint('Prompt added to favorites successfully');
+            print('Prompt added to favorites successfully');
+            return true;
         } else {
-            throw Exception('Failed to add prompt to favorites');
+            print('Failed to add prompt to favorites');
+            return false;
         }
     }
 
-    Future<void> removeFavoritePrompt(String id) async {
+    Future<bool> removeFavoritePrompt(String id) async {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         final String? accessToken = prefs.getString('access_token');
         
@@ -217,14 +218,16 @@ class PromptManage{
 
         final uri = Uri.parse('$baseUrl/api/v1/prompts/$id/favorite');
 
-        var request = http.Request('DELETE', uri);
-        request.headers.addAll(headers);
-
-        var response = await request.send();
+        final response = await http.delete(
+          uri,
+          headers: headers,
+        );
         if (response.statusCode == 200) {
-            debugPrint('Prompt removed from favorites successfully');
+            print('Prompt removed from favorites successfully');
+            return true;
         } else {
-            throw Exception('Failed to remove prompt from favorites');
+            print('Failed to remove prompt from favorites');
+            return false;
         }
     }
 }
