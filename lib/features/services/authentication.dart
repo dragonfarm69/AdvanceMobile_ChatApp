@@ -116,9 +116,9 @@ class AuthService{
     var response = await http.delete(
       Uri.parse('$baseUrl/api/v1/auth/sessions/current'),
       headers: headers,
+      body: json.encode({}),
     );
     if (response.statusCode == 200) {
-      await TokenStore.clearTokens();
       return true;
     } else {
       return false;

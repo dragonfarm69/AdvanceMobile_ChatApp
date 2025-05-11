@@ -9,6 +9,7 @@ class TokenStore {
 
     print('Tokens stored successfully');
     print('Access token: ${prefs.getString('access_token')}');
+    print('Refresh token: ${prefs.getString('refresh_token')}');
   }
 
   static Future<Map<String, String>?> getTokens() async {

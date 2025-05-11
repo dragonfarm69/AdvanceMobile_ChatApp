@@ -9,7 +9,7 @@ import './screens/LoginScreen.dart';
 import './screens/RegisterScreen.dart';
 import 'screens/knowledge Screen/knowledge_screen.dart';
 import 'screens/Subscription Screen/subscription.dart';
-
+import 'globals.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AuthService authService = AuthService();
@@ -40,6 +40,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'AI Chat App',
       theme: ThemeData(
         brightness: Brightness.dark,
@@ -50,6 +51,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => isLoggedIn ? const HomeScreen() : const LoginScreen(),
+        '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/chat': (context) => const ChatRouteWrapper(),
