@@ -16,6 +16,21 @@ void main() async {
   runApp(MyApp(isLoggedIn: isLoggedIn,));
 }
 
+class ChatRouteWrapper extends StatelessWidget {
+  const ChatRouteWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    final conversationId = args != null && args['conversationId'] != null
+        ? args['conversationId']
+        : UniqueKey().toString();
+
+    return ChatScreen(conversationId: conversationId);
+  }
+}
+
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
   const MyApp({super.key, required this.isLoggedIn});
@@ -35,20 +50,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => isLoggedIn ? const HomeScreen() : const LoginScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/chat': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-
-          // Check if conversationId is provided, otherwise generate a new one
-          final conversationId = args!= null && args['conversationId'] != null ? args['conversationId'] : UniqueKey().toString(); // Generate a new conversation ID if not provided;
-
-          final message = args != null && args['message'] != null ? args['message'] as String : ''; // Extract the message if provided
-          // Extract the initial message if provided
-          final content = args != null && args['content'] != null
-              ? args['content'] as String
-              : '';
-            return ChatScreen(conversationId: conversationId, message: message, content: content);
-          }
-        },
+        '/chat': (context) => const ChatRouteWrapper(),
         '/setting': (context) => const SettingsScreen(),
         '/bots': (context) => const BotsScreen(),
         '/profile': (context) => const ProfileScreen(),

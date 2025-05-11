@@ -10,13 +10,13 @@ class PressableDrawerItem extends StatefulWidget {
   final VoidCallback? onTap;
 
   const PressableDrawerItem({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     this.iconColor = Colors.white,
     this.textColor = Colors.white,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   _PressableDrawerItemState createState() => _PressableDrawerItemState();

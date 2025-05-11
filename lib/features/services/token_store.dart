@@ -6,15 +6,18 @@ class TokenStore {
     await prefs.setString('access_token', accessToken);
     await prefs.setString('refresh_token', refreshToken);
     await prefs.setString('user_id', userId);
+
+    print('Tokens stored successfully');
+    print('Access token: ${prefs.getString('access_token')}');
   }
 
-  static Future<Map<String, String>> getTokens() async {
+  static Future<Map<String, String>?> getTokens() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
     String? refreshToken = prefs.getString('refresh_token');
     String? userId = prefs.getString('user_id');
     if( accessToken == null || refreshToken == null || userId == null) {
-      throw Exception('No tokens found');
+      return null;
     }
     return {
       'access_token': accessToken,
@@ -28,5 +31,8 @@ class TokenStore {
     await prefs.remove('access_token');
     await prefs.remove('refresh_token');
     await prefs.remove('user_id');
+
+    print('Tokens cleared successfully');
+    print('Access token: ${prefs.getString('access_token')}');
   }
 }

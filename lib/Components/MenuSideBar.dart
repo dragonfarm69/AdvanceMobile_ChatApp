@@ -86,6 +86,7 @@ Widget menuSideBar(BuildContext context) {
           // Spacer to push sign out to the bottom
           Spacer(),
           buildDrawerItem(
+            context: context,
             icon: Icons.logout,
             title: 'Sign Out',
             iconColor: Colors.red,

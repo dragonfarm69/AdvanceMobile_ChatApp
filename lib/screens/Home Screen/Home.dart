@@ -2,10 +2,10 @@ import 'package:ai_chat_app/features/model/assistant.dart';
 import 'package:ai_chat_app/features/model/conversation.dart';
 import 'package:flutter/material.dart';
 import '../../Components/ChatHistoryItem.dart';
-import '../../Components/PromptMenu.dart';
-import '../../Components/botCard.dart';
 import '../../Components/MenuSideBar.dart';
 import '../../features/services/ai_chat.dart';
+import '../../Components/PromptMenu.dart';
+import '../../features/services/chat_token.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -16,16 +16,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  PromptMenu promptMenu = PromptMenu(); // Initialize your prompt menu
   bool _isLoading = false;
+  final LayerLink _layerLink = LayerLink(); // Link for the prompt menu
   final AiChat chatService = AiChat(); // Initialize your chat service
+  final ChatToken chatToken = ChatToken(); // Initialize your chat token service
+  int remainingUsage = 0; // Initialize remaining usage
 
   List<Map<String, Assistant>> assistants = [
-    {"assistant": Assistant(name: 'Claude 3 Haiku', id: 'claude-3-haiku-20240307', model: 'dify', tokenCost: 1)},
-    {"assistant": Assistant(name: 'Claude 35 Sonnet', id: 'claude-3-5-sonnet-20240620', model: 'dify', tokenCost: 3)},
-    {"assistant": Assistant(name: 'Gemini 1.5 Flash', id: 'gemini-1.5-flash-latest', model: 'dify', tokenCost: 1)},
-    {"assistant": Assistant(name: 'Gemini 1.5 Pro', id: 'gemini-1.5-pro-latest', model: 'dify', tokenCost: 5)},
-    {"assistant": Assistant(name: 'GPT 4o', id: 'gpt-4o', model: 'dify', tokenCost: 5)},
-    {"assistant": Assistant(name: 'GPT 4o Mini', id: 'gpt-4o-mini', model: 'dify', tokenCost: 1)},
+    {"assistant": Assistant(name: 'Claude 3 Haiku', id: 'claude-3-haiku-20240307', model: 'dify')},
+    {"assistant": Assistant(name: 'Claude 35 Sonnet', id: 'claude-3-5-sonnet-20240620', model: 'dify')},
+    {"assistant": Assistant(name: 'Gemini 1.5 Flash', id: 'gemini-1.5-flash-latest', model: 'dify')},
+    {"assistant": Assistant(name: 'Gemini 1.5 Pro', id: 'gemini-1.5-pro-latest', model: 'dify')},
+    {"assistant": Assistant(name: 'GPT 4o', id: 'gpt-4o', model: 'dify')},
+    {"assistant": Assistant(name: 'GPT 4o Mini', id: 'gpt-4o-mini', model: 'dify')},
   ];
   String selectedAssistant = ""; // Default model selection
 
@@ -33,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   bool _isSearching = false;
-  PromptMenu promptMenu = PromptMenu();
 
   // Sample chat history data
   List<Conversation> chatHistory = [];
@@ -41,8 +44,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadChat() async {
     // Load chat data if needed
     final history = await chatService.getAllChats() ?? [];
+    
     setState(() {
-      chatHistory = history; // Update the state with loaded chat history
+      chatHistory = history;
+    });
+    await ChatToken.initializeTokens(); // Get remaining tokens
+    int usage = await ChatToken.getTokens();
+    setState(() {
+      remainingUsage = usage;
     });
   }
 
@@ -71,19 +80,15 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadChat();
   }
 
+
   Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) {
+      return; // Ignore empty messages
+    }
     setState(() {
       _isLoading = true;
     });
-
-    final text = _messageController.text.trim();
-
-    if (text.isEmpty) {    
-      setState(() {
-        _isLoading = false;
-      });
-      return; // Ignore empty messagesreturn
-    } // Ignore empty messages
 
     final result = await chatService.newChat(text, selectedAssistantDetails);
 
@@ -91,7 +96,18 @@ class _HomeScreenState extends State<HomeScreen> {
       // Handle successful response, e.g., update UI or show a message
       final message = result['messages'];
       final conversationId = result['conversationId'];
+      final remainingUsage = result['remainingUsage'];
 
+      setState(() {
+        _isLoading = false;
+        _messageController.clear(); // Clear the input field after sending
+        chatHistory.insert(0, Conversation(
+          id: conversationId,
+          title: text,
+          createdAt: DateTime.now(),
+        )); // Add new chat to the top of the list
+        this.remainingUsage = remainingUsage; // Update remaining usage
+      });
       await Navigator.pushNamed(
         context,
         '/chat',
@@ -115,9 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get screen size for responsive layout
-    final screenSize = MediaQuery.of(context).size;
-    
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       drawer: menuSideBar(context),
@@ -155,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       child: _isSearching
-                        ? Container(
+                        ? SizedBox(
                             key: const ValueKey('searchField'),
                             height: 44,
                             child: TextField(
@@ -184,54 +197,53 @@ class _HomeScreenState extends State<HomeScreen> {
                                 contentPadding: const EdgeInsets.symmetric(vertical: 8),
                               ),
                             ),
-                          )
-                        : const SizedBox(
-                            key: ValueKey('empty'),
-                          ),
+                        )
+                      : const SizedBox(
+                          key: ValueKey('empty'),
+                        ),
                     ),
                   ),
                   
                   // Search icon button
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.white),
-                  onPressed: () {
-                          setState(() {
-                            _isSearching = true;
-                          });
-                          _searchFocusNode.requestFocus();
-                        },
-                        tooltip: 'Search',
-                      ),
-                ],
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Colors.white),
+                    onPressed: () {
+                      setState(() {
+                        _isSearching = true;
+                      });
+                      _searchFocusNode.requestFocus();
+                    },
+                    tooltip: 'Search',
                   ),
-                ),
+                ],
+              ),
+            ),
 
             // Bot cards carousel with overflow protection
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                    "AI Chat Assistants",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[300],
-                    ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                    "Choose an assistant to start your conversation",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
-                    ),
-                    ),
-                  ],
-                  ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: const EdgeInsets.only(bottom: 8),
+              child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                "Welcome to Chat AI",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                "Your personal assistant for conversations, learning, and creativity.",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[400],
+                ),
                 ),
               ],
+              ),
             ),
 
             // Chat history section label
@@ -294,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       return chatHistoryItem(
                         conversationId: chat.id,
                         title: chat.title,
-                        date: "${chat.createdAt.year}-${chat.createdAt.month.toString().padLeft(2, '0')}-${chat.createdAt.day.toString().padLeft(2, '0')} ${chat.createdAt.hour.toString().padLeft(2, '0')}:${chat.createdAt.minute.toString().padLeft(2, '0')}",
+                        date: "${chat.createdAt.year}-${chat.createdAt.month.toString().padLeft(2, '0')}-${chat.createdAt.day.toString().padLeft(2, '0')}  ${chat.createdAt.hour.toString().padLeft(2, '0')}:${chat.createdAt.minute.toString().padLeft(2, '0')}",
                         context: context,
                       );
                     },
@@ -311,27 +323,27 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color(0xFF4A148C), // Dark purple color
+                fillColor: const Color(0xFF2C003E), // Dark purple background
                 border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               ),
-              dropdownColor: const Color(0xFF4A148C), // Dark purple dropdown background
+              dropdownColor: const Color(0xFF2C003E), // Dark purple dropdown background
               items: assistants.map((assistant) {
                 return DropdownMenuItem<String>(
                 value: assistant["assistant"]?.id,
                 child: Text(
                   assistant["assistant"]!.name,
-                  style: const TextStyle(color: Colors.white), // White text for better contrast
+                  style: const TextStyle(color: Colors.white), // White text
                 ),
                 );
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                selectedAssistant = value!;
-                selectedAssistantDetails = assistants.firstWhere((assistant) => assistant["assistant"]!.id == value)["assistant"]!;
+                  selectedAssistant = value!;
+                  selectedAssistantDetails = assistants.firstWhere((assistant) => assistant["assistant"]!.id == value)["assistant"]!;
                 });
               },
               ),
@@ -357,34 +369,47 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                     // Select model
 
-                    Expanded(
-                      child: CompositedTransformTarget(
-                      link: _layerLink,
-                      child: TextField(
-                        controller: _messageController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: "Type a message...",
-                          hintStyle: const TextStyle(color: Colors.white54),
-                          filled: true,
-                          fillColor: const Color(0xFF2C003E),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
-                          ),
-
-                          onChanged: (text) {
-                            if (text.split(' ').last == '/') {
-                              promptMenu.show(context: context, link: _layerLink, controller: _messageController);
-                            }
-                            else {
-                              promptMenu.hide();
-                            }
-                          }
+                    Expanded( // Enter chat
+                      child: Container(
+                        constraints: const BoxConstraints(maxHeight: 120),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF212121),
+                          borderRadius: BorderRadius.circular(24),
                         ),
+                     
+                     
+                        child: CompositedTransformTarget(
+                          link: _layerLink,
+                          child:  TextField(
+                            controller: _messageController,
+                            maxLines: null,
+                            textAlignVertical: TextAlignVertical.center,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: "Message...",
+                              hintStyle: TextStyle(color: Colors.grey[400]),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+
+                            onChanged: (text) {
+                              if (text.endsWith('/')) {
+                                PromptMenu.show(context: context, link: _layerLink, controller: _messageController);
+                              } else {
+                                PromptMenu.hide();
+                              }
+                            },
+                          ), 
+                        )
+                    
                       ),
-                    ) 
-                  ),
+                    ),
                     const SizedBox(width: 8),
                     Container(
                       height: 48,
@@ -408,6 +433,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Usage:',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                  Text(
+                    '$remainingUsage tokens',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

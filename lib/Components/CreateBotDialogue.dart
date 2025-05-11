@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'KnowledgeSourceDialogue.dart';
 
 class CreateBotDialog extends StatefulWidget {
-  const CreateBotDialog({Key? key}) : super(key: key);
+  const CreateBotDialog({super.key});
 
   @override
   _CreateBotDialogState createState() => _CreateBotDialogState();
@@ -13,7 +13,7 @@ class _CreateBotDialogState extends State<CreateBotDialog> {
   final TextEditingController _instructionsController = TextEditingController();
   bool _advancedOptionsExpanded = false;
   final _formKey = GlobalKey<FormState>();
-  List<String> _knowledgeSources = [];
+  final List<String> _knowledgeSources = [];
 
   @override
   Widget build(BuildContext context) {

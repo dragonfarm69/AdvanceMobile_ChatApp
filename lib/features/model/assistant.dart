@@ -2,13 +2,11 @@ class Assistant {
   final String id;
   final String name;
   final String model;
-  final int tokenCost;
 
   Assistant({
     required this.id,
     required this.name,
     required this.model,
-    this.tokenCost = 0,
   });
 
   Map<String, dynamic> toJson() {
@@ -16,7 +14,6 @@ class Assistant {
       'id': id,
       'name': name,
       'model': model,
-      'tokenCost': tokenCost,
     };
   }
 
@@ -25,7 +22,6 @@ class Assistant {
       id: json['id'],
       name: json['name'],
       model: json['model'],
-      tokenCost: json['tokenCost'] ?? 0,
     );
   }
 }

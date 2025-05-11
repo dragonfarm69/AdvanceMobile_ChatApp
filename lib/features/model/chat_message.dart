@@ -16,4 +16,15 @@ class ChatMessage {
       content: json['content'],
     );
   }
+
+    @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatMessage &&
+          runtimeType == other.runtimeType &&
+          content == other.content &&
+          role == other.role;
+
+  @override
+  int get hashCode => content.hashCode ^ role.hashCode;
 }

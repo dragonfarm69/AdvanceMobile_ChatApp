@@ -85,14 +85,14 @@ class PromptManage{
                 final id = item['_id'] as String;
                 final title = item['title'] as String;
                 final content = item['content'] as String;
-                final description = item['description'] as String;
+                final description = item['description'] as String? ?? '';
                 final isPublic = item['isPublic'] as bool? ?? false;
                 final isFavorite = item['isFavorite'] as bool? ?? false;
                 final prompt = Prompt(
                     id: id,
                     title: title,
                     content: content,
-                    description: description,
+                    description: description.isNotEmpty ? description : 'No description provided',
                     isPublic: isPublic,
                     isFavorite: isFavorite,
                 );
@@ -102,6 +102,7 @@ class PromptManage{
 
             return prompts;
         } else {
+          print('Error: ${response.reasonPhrase}');
             throw Exception('Failed to load prompt');
         }
     }
@@ -198,7 +199,7 @@ class PromptManage{
             print('Prompt added to favorites successfully');
             return true;
         } else {
-            print('Failed to add prompt to favorites');
+            print('Error: ${response.reasonPhrase}');
             return false;
         }
     }
@@ -226,7 +227,7 @@ class PromptManage{
             print('Prompt removed from favorites successfully');
             return true;
         } else {
-            print('Failed to remove prompt from favorites');
+            print('Error: ${response.reasonPhrase}');
             return false;
         }
     }

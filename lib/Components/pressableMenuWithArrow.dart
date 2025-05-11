@@ -6,11 +6,11 @@ class PressableMenuItemWithArrow extends StatefulWidget {
   final VoidCallback? onTap;
 
   const PressableMenuItemWithArrow({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   _PressableMenuItemWithArrowState createState() =>

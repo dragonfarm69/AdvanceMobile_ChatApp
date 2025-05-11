@@ -18,9 +18,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
       String passwordConfirmation = _passwordConfirmationController.text.trim();
-      if (email.isEmpty || password.isEmpty || passwordConfirmation.isEmpty) {
+      if (email == '' || password == '' || passwordConfirmation == '') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please fill in all fields.')),
+          SnackBar(content: Text('Please fill in all fields')),
         );
         return;
       }
@@ -29,9 +29,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Passwords do not match.')),
         );
-        setState(() {
-          _isLoading = false;
-        });
         return;
       }
 
@@ -47,6 +44,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       setState(() {
         _isLoading = false;
+        _emailController.clear();
+        _passwordController.clear();
+        _passwordConfirmationController.clear();
       });
 
       if (result != null) {
@@ -98,9 +98,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 children: [
                   TextField(
+                    controller: _emailController,
                     style: TextStyle(color: const Color.fromARGB(255, 68, 68, 68)),
                     decoration: InputDecoration(
-                      controller: _emailController,
                       hintText: 'Email',
                       filled: true,
                       fillColor: const Color.fromARGB(255, 255, 255, 255),
@@ -111,10 +111,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: _passwordController,  
                     style: TextStyle(color: const Color.fromARGB(255, 68, 68, 68)),
                     obscureText: true,
                     decoration: InputDecoration(
-                      controller: _passwordController,
                       hintText: 'Password',
                       filled: true,
                       fillColor: Colors.white,
@@ -125,10 +125,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: _passwordConfirmationController,
                     style: TextStyle(color: const Color.fromARGB(255, 68, 68, 68)),
                     obscureText: true,
                     decoration: InputDecoration(
-                      controller: _passwordConfirmationController,
                       hintText: 'Password Confirmation',
                       filled: true,
                       fillColor: const Color.fromARGB(255, 255, 255, 255),
@@ -157,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextButton(
                     onPressed: () {
                       // Navigate to the registration screen
-                      Navigator.pushNamed(context, '/ogin');
+                      Navigator.pushNamed(context, '/login');
                     },
                     child: Text(
                       "Already have an account? Login",

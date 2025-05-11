@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class KnowledgeSourceDialog extends StatelessWidget {
-  const KnowledgeSourceDialog({Key? key}) : super(key: key);
+  const KnowledgeSourceDialog({super.key});
 
   @override
   Widget build(BuildContext context) {

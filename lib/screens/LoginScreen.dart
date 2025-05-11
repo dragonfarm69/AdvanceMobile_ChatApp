@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:ai_chat_app/features/services/authentication.dart';
-import 'package:ai_chat_app/screens/Home%20Screen/HomeScreen.dart';
+import 'package:ai_chat_app/screens/Home%20Screen/Home.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget{
@@ -17,44 +17,59 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   void _handleLogin() async {
-    final String email = _emailController.text.trim();
-    final String password = _passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+    if (email == '' || password == '') {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields.')),
+        SnackBar(content: Text('Please fill in all fields')),
       );
+      setState(() {
+        _isLoading = false;
+      });
       return;
-    }`
+    }
+
     setState(() {
       _isLoading = true;
     });
-    
-    final auth = AuthService();
-    final result = await auth.signIn(
-      email, 
-      password
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result != null) {
-      // Handle successful login, e.g., navigate to home screen
-      Navigator.pushNamedAndRemoveUntil(
-        context,   
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-        (route) => false
+  
+    try {
+      final auth = AuthService();
+      final result = await auth.signIn(
+        email,
+        password
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login successful')),
-      );
-    } else {
-      // Handle login error, e.g., show a snackbar or alert dialog
+
+      setState(() {
+        _isLoading = false;
+        _emailController.clear();
+        _passwordController.clear();
+      });
+
+      if (result != null) {
+        // Handle successful login, e.g., navigate to home screen
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()), 
+          (route) => false
+        );
+      } else {
+        print("Login failed: $result");
+        // Handle login error, e.g., show a snackbar or alert dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed. Please try again.')),
+        );
+      }
+    } catch (e, stack) {
+      print("Sign in error: $e\n$stack");
+      // Handle error, e.g., show a snackbar or alert dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login failed. Please try again.')),
       );
+
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
   

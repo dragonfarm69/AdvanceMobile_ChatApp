@@ -34,7 +34,7 @@ Widget chatHistoryItem({
       ),
       onTap: () {
         // Handle navigation to the specific chat
-        Navigator.pushNamed(context, '/chat', arguments: {'conversationId': conversationId, 'title': title});
+        Navigator.pushNamed(context, '/chat', arguments: {'conversationId': conversationId});
       },
     ),
   );
