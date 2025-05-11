@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../Components/MenuSideBar.dart';
 import '../../Components/CreateBotDialogue.dart';
 import '../../features/services/bot_management.dart';
@@ -8,6 +9,7 @@ import 'botDetail.dart';
 import '../Chat Screen/ChatScreen.dart';
 import '../../features/services/ai_chat.dart';
 import '../../features/model/assistant.dart';
+import '../../Components/adsBanner.dart';
 
 /// A stateful version of BotsScreen that supports adding, viewing details, and deleting bots.
 class BotsScreen extends StatefulWidget {
@@ -48,7 +50,10 @@ class _BotsScreenState extends State<BotsScreen> {
 
       // Create a new chat session
       final aiChat = AiChat();
-      final response = await aiChat.newChat('Hello ' + assistant.name, assistant);
+      final response = await aiChat.newChat(
+        'Hello ' + assistant.name,
+        assistant,
+      );
 
       if (response != null && response.containsKey('conversationId')) {
         final conversationId = response['conversationId'] as String;
@@ -165,21 +170,29 @@ class _BotsScreenState extends State<BotsScreen> {
       drawer: menuSideBar(context),
       backgroundColor: const Color(0xFF121212),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child:
-              _selectedBot == null
-                  ? _buildListView(context)
-                  : BotDetailView(
-                    bot: _selectedBot!,
-                    onDelete: (bot) => _deleteBot(bot),
-                    onUpdate: () => _updateBot(),
-                    onBack: () {
-                      setState(() {
-                        _selectedBot = null;
-                      });
-                    },
-                  ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child:
+                    _selectedBot == null
+                        ? _buildListView(context)
+                        : BotDetailView(
+                          bot: _selectedBot!,
+                          onDelete: (bot) => _deleteBot(bot),
+                          onUpdate: () => _updateBot(),
+                          onBack: () {
+                            setState(() {
+                              _selectedBot = null;
+                            });
+                          },
+                        ),
+              ),
+            ),
+            // Add the banner ad at the bottom of the screen
+            MyBannerAdWidget(adSize: AdSize.banner),
+          ],
         ),
       ),
     );
@@ -270,14 +283,17 @@ class _BotsScreenState extends State<BotsScreen> {
                     _loadBots();
                   } else {
                     // Filter bots based on name or description
-                    _bots = _bots.where((bot) {
-                      final nameLower = bot.assistantName?.toLowerCase() ?? '';
-                      final descLower = bot.description?.toLowerCase() ?? '';
-                      final searchLower = query.toLowerCase();
-                      
-                      return nameLower.contains(searchLower) || 
-                             descLower.contains(searchLower);
-                    }).toList();
+                    _bots =
+                        _bots.where((bot) {
+                          final nameLower =
+                              bot.assistantName?.toLowerCase() ?? '';
+                          final descLower =
+                              bot.description?.toLowerCase() ?? '';
+                          final searchLower = query.toLowerCase();
+
+                          return nameLower.contains(searchLower) ||
+                              descLower.contains(searchLower);
+                        }).toList();
                   }
                 });
               },
@@ -377,7 +393,10 @@ class _BotsScreenState extends State<BotsScreen> {
             style: TextStyle(color: Colors.grey[400]),
           ),
           trailing: IconButton(
-            icon: const Icon(Icons.edit, color: Color.fromARGB(255, 0, 144, 240)),
+            icon: const Icon(
+              Icons.edit,
+              color: Color.fromARGB(255, 0, 144, 240),
+            ),
             onPressed: () => _viewBotDetail(bot),
           ),
           onTap: () => _startChatWithBot(bot),
