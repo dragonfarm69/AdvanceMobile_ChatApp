@@ -621,6 +621,9 @@ class _BotDetailViewState extends State<BotDetailView> {
                     await _fetchBotKnowledge();
                     await _fetchAvailableKnowledge();
 
+                    // Force close the modal in order to refresh the knowledge list
+                    Navigator.pop(context);
+
                     // Show success message
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -765,9 +768,21 @@ class _BotDetailViewState extends State<BotDetailView> {
                   });
 
                   await _botService.addKnowledge(widget.bot.id!, knowledge.id);
-                  // // Reload data
+                  //
                   await _fetchBotKnowledge();
                   await _fetchAvailableKnowledge();
+
+                  // Force close the modal in order to refresh the knowledge list
+                  Navigator.pop(context);
+
+                  // Show success message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Knowledge added successfully'),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
                 },
                 tooltip: "Add to bot",
               ),
