@@ -185,9 +185,6 @@ class PromptMenu {
                     bool deleted = await PromptManage().deletePrompt(prompt.id);
                     if (deleted) {
                       refresh(); // Refresh the list after deletion
-                      scaffoldMessengerKey.currentState?.showSnackBar(
-                        const SnackBar(content: Text('Prompt deleted successfully!')),
-                      );
                     } else {
                       scaffoldMessengerKey.currentState?.showSnackBar(
                         const SnackBar(content: Text('Failed to delete prompt!')),
