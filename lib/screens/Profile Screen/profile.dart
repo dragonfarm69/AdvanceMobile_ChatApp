@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../Components/pressableMenuWithArrow.dart';
 import '../../Components/StatefullWidgetButton.dart';
 import '../../features/services/userInfo.dart';
@@ -7,7 +8,7 @@ import '../../features/model/subscription.dart';
 import '../../features/model/tokenUsage.dart';
 import '../../features/services/bot_management.dart';
 import '../../features/services/knowledge_management.dart';
-
+import '../../Components/adsBanner.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -299,6 +300,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 24),
+            MyBannerAdWidget(adSize: AdSize.banner),
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ai_chat_app/features/services/authentication.dart';
 import './screens/Chat Screen/ChatScreen.dart';
@@ -9,12 +11,14 @@ import './screens/LoginScreen.dart';
 import './screens/RegisterScreen.dart';
 import 'screens/knowledge Screen/knowledge_screen.dart';
 import 'screens/Subscription Screen/subscription.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AuthService authService = AuthService();
 
   bool isLoggedIn = await authService.checkIfLoggedIn();
+  unawaited(MobileAds.instance.initialize());
   runApp(MyApp(isLoggedIn: isLoggedIn,));
 }
 

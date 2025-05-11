@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../features/services/userInfo.dart';
 import '../../features/model/user.dart';
 import '../../features/model/subscription.dart';
 import '../../features/model/tokenUsage.dart';
+import '../../Components/adsBanner.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({Key? key}) : super(key: key);
@@ -74,7 +76,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Expanded(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ],
+        ),
       );
     }
 
@@ -480,6 +489,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                 ),
               ),
+              SizedBox(height: 24),
+              MyBannerAdWidget(adSize: AdSize.banner),
             ],
           ),
         ),
