@@ -30,6 +30,7 @@ class _BotDetailViewState extends State<BotDetailView> {
   late TextEditingController nameController;
   late TextEditingController descriptionController;
   late TextEditingController instructionsController;
+  bool _isUpdating = false; // Add this flag
 
   final KnowledgeManager _knowledgeManager = KnowledgeManager();
 
@@ -116,40 +117,55 @@ class _BotDetailViewState extends State<BotDetailView> {
   }
 
   Future<void> _updateBot() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text('Update ${widget.bot.assistantName}?'),
-            content: const Text('Are you sure you want to edit this bot?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Update'),
-              ),
-            ],
+    if (_isUpdating) return;
+
+    setState(() {
+      _isUpdating = true;
+    });
+
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder:
+            (ctx) => AlertDialog(
+              title: Text('Update ${widget.bot.assistantName}?'),
+              content: const Text('Are you sure you want to edit this bot?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Update'),
+                ),
+              ],
+            ),
+      );
+
+      if (confirmed == true) {
+        await _botService.updateBot(
+          nameController.text,
+          instructionsController.text,
+          descriptionController.text,
+          widget.bot.id!,
+        );
+
+        widget.onUpdate();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bot updated successfully'),
+            backgroundColor: Colors.green,
           ),
-    );
-    if (confirmed == true) {
-      await _botService.updateBot(
-        nameController.text,
-        instructionsController.text,
-        descriptionController.text,
-        widget.bot.id!,
-      );
-
-      widget.onUpdate();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bot updated successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+        });
+      }
     }
   }
 
@@ -202,7 +218,7 @@ class _BotDetailViewState extends State<BotDetailView> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: ElevatedButton.icon(
             icon: const Icon(Icons.chat_bubble_outline),
-            label: const Text("Bot Preview", style: TextStyle(fontSize: 20),),
+            label: const Text("Bot Preview", style: TextStyle(fontSize: 20)),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF5C6BC0),
               foregroundColor: Colors.white,
@@ -219,8 +235,7 @@ class _BotDetailViewState extends State<BotDetailView> {
                   builder:
                       (context) => AskScreen(
                         botId: widget.bot.id!,
-                        apiBaseUrl:
-                            'https://knowledge-api.dev.jarvis.cx',
+                        apiBaseUrl: 'https://knowledge-api.dev.jarvis.cx',
                         botName: widget.bot.assistantName,
                       ),
                 ),

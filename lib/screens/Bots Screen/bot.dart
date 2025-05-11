@@ -80,47 +80,12 @@ class _BotsScreenState extends State<BotsScreen> {
   }
 
   Future<void> _updateBot() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text('Update ${_selectedBot!.assistantName}?'),
-            content: const Text('Are you sure you want to edit this bot?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Update'),
-              ),
-            ],
-          ),
-    );
-    if (confirmed == true) {
-      await _botService.updateBot(
-        _selectedBot!.assistantName!,
-        _selectedBot!.instructions,
-        _selectedBot!.description!,
-        _selectedBot!.id!,
-      );
-
-      // Refresh bots list
-      final updatedBots = await _botService.getPublicBots();
-      setState(() {
-        _bots = updatedBots;
-        _selectedBot = _bots.firstWhere((b) => b.id == _selectedBot!.id);
-      });
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bot updated successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
+    // Refresh bots list
+    final updatedBots = await _botService.getPublicBots();
+    setState(() {
+      _bots = updatedBots;
+      _selectedBot = _bots.firstWhere((b) => b.id == _selectedBot!.id);
+    });
   }
 
   Future<void> _loadBots() async {
