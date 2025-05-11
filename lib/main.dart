@@ -7,6 +7,8 @@ import './screens/Bots Screen/bot.dart';
 import './screens/Profile Screen/profile.dart';
 import './screens/LoginScreen.dart';
 import './screens/RegisterScreen.dart';
+import 'screens/knowledge Screen/knowledge_screen.dart';
+import 'screens/Subscription Screen/subscription.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +56,8 @@ class MyApp extends StatelessWidget {
         '/setting': (context) => const SettingsScreen(),
         '/bots': (context) => const BotsScreen(),
         '/profile': (context) => const ProfileScreen(),
+        '/sub': (context) => const SubscriptionScreen(),
+        '/knowledge': (context) => const KnowledgeScreen(),
       },
       onGenerateRoute: (settings) {
         // Handle any routes that aren't defined above
