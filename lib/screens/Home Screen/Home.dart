@@ -116,7 +116,12 @@ class _HomeScreenState extends State<HomeScreen> {
           'message': message,
           'conversationId': conversationId,
         },
-      );
+      ).then((_) async {
+        final usage = await ChatToken.getTokens();
+        setState(() {
+          this.remainingUsage = usage;
+        });
+      });
     } else {
       setState(() {
         _isLoading = false;

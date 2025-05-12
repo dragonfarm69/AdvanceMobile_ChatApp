@@ -5,7 +5,7 @@ import 'package:ai_chat_app/features/services/token_store.dart';
 class AuthService{
   final String baseUrl = 'https://auth-api.dev.jarvis.cx';
 
-  Future<Map<String, String>?> signUp(String email, String password) async {
+  Future<Map<String, dynamic>?> signUp(String email, String password) async {
     final Map<String, String> headers = {
       'X-Stack-Access-Type': 'client',
       'X-Stack-Project-Id': 'a914f06b-5e46-4966-8693-80e4b9f4f409',
@@ -25,7 +25,6 @@ class AuthService{
 
     if (response.statusCode == 200) {
       var jsonResp = jsonDecode(response.body);
-      await TokenStore.storeTokens(jsonResp['access_token'], jsonResp['refresh_token'], jsonResp['user_id']);
       return jsonResp;
     }
     else {

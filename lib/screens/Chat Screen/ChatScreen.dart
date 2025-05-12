@@ -114,15 +114,21 @@ class _ChatScreenState extends State<ChatScreen> {
         await ChatToken.setTokens(usage);
         setState(() {
           remainingUsage = usage; // Update remaining usage
+              
+          _isLoading = false; // Hide loading indicator
+    
         });
+
       }
  // Simulate typing effect
     } catch (e) {
       print("Error sending message: $e"); // Handle error
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+        messages.removeLast(); // Remove the typing message
+      });
     }
-    setState(() {
-      _isLoading = false; // Hide loading indicator
-    });
+
   }
 
   void _scrollToBottom() {
