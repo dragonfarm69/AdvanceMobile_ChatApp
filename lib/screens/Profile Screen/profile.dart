@@ -1,14 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../Components/pressableMenuWithArrow.dart';
 import '../../Components/StatefullWidgetButton.dart';
-
-class ProfileScreen extends StatelessWidget {
+import '../../features/services/userInfo.dart';
+import '../../features/model/user.dart';
+import '../../features/model/subscription.dart';
+import '../../features/model/tokenUsage.dart';
+import '../../features/services/bot_management.dart';
+import '../../features/services/knowledge_management.dart';
+import '../../Components/adsBanner.dart';
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final Userinfo _userInfo = Userinfo();
+  User? _user;
+  Subscription? _subscription;
+  TokenUsage? _tokenUsage;
+  bool _isLoading = true;
+  String? _errorMessage;
+  int? _numberOfBots;
+  int? _numberOfKnowledges;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final user = await _userInfo.getUserInfo();
+      final subscription = await _userInfo.getSubscription();
+      final tokenUsage = await _userInfo.getTokenUsage();
+      final numberOfBots = await BotManagement().getNumberOfBots();
+      final numberOfKnowledges = await KnowledgeManager().getNumberOfKnowledges();
+
+      // print('Number of Bots: $numberOfBots');
+
+      if (mounted) {
+        setState(() {
+          _user = user;
+          _subscription = subscription;
+          _tokenUsage = tokenUsage;
+          _numberOfBots = numberOfBots;
+          _numberOfKnowledges = numberOfKnowledges;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load profile data: ${e.toString()}';
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
+    if (_isLoading) {
+      return Scaffold(
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.red),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(onPressed: _loadUserData, child: Text('Retry')),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -22,7 +106,11 @@ class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left, size: 32, color: Colors.white),
+                    icon: const Icon(
+                      Icons.chevron_left,
+                      size: 32,
+                      color: Colors.white,
+                    ),
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, '/home');
                     },
@@ -31,24 +119,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.lightBlue, width: 2),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(13),
-                      child: Container(
-                        color: Colors.blue[400],
-                        child: const Center(
-                          child: Icon(
-                            Icons.smart_toy,
-                            size: 36,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                    child: Icon(
+                      Icons.insert_emoticon,
+                      size: 40,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -56,30 +130,42 @@ class ProfileScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'AIBuddy',
+                        Text(
+                          _user?.email.substring(
+                                0,
+                                _user?.email.indexOf('@'),
+                              ) ??
+                              'Chat App User',
                           style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 8),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: screenWidth * 0.45,
+                        Text(
+                          _user?.email ?? 'No email available',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
                           ),
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.edit, size: 16),
-                            label: const Text('Edit Profile'),
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              minimumSize: Size.zero,
-                            ),
-                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
+                        // const SizedBox(height: 8),
+                        // ConstrainedBox(
+                        //   constraints: BoxConstraints(
+                        //     maxWidth: screenWidth * 0.45,
+                        //   ),
+                        //   child: ElevatedButton.icon(
+                        //     icon: const Icon(Icons.edit, size: 16),
+                        //     label: const Text('Edit Profile'),
+                        //     onPressed: () {},
+                        //     style: ElevatedButton.styleFrom(
+                        //       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        //       minimumSize: Size.zero,
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
@@ -92,14 +178,19 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
               child: Row(
                 children: [
-                  _buildStatCard('28', 'Chats'),
-                  _buildStatCard('6', 'AI Models'),
-                  _buildStatCard('120', 'Tokens'),
+                  _buildStatCard((_numberOfBots ?? 0).toString(), 'Bots'),
+                  _buildStatCard(
+                    _tokenUsage?.unlimited == true
+                        ? '∞'
+                        : '${_tokenUsage?.availableTokens ?? 0}/${_tokenUsage?.totalTokens ?? 0}',
+                    'Tokens',
+                  ),
+                  _buildStatCard((_numberOfKnowledges ?? 0).toString(), 'Knowledges'),
                 ],
               ),
             ),
 
-            // Subscription section - Improved spacing and responsiveness
+            // Subscription section with real data
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               child: Column(
@@ -133,29 +224,30 @@ class ProfileScreen extends StatelessWidget {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.grey[850],
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
-                                'Free plan',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
+                              // child: Text(
+                              //   _subscription?.plan?.name ?? 'Free plan',
+                              //   style: TextStyle(
+                              //     fontSize: 14,
+                              //     fontWeight: FontWeight.bold,
+                              //     color: Colors.white,
+                              //   ),
+                              // ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        const Text(
+                        Text(
+                          // _subscription?.plan?.description ??
                           'Subscribe to send more messages without daily limits and access premium features.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -176,24 +268,6 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: () {},
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.restore, size: 16),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Restore subscription',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[300],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -209,16 +283,11 @@ class ProfileScreen extends StatelessWidget {
               onTap: () {},
             ),
             PressableMenuItemWithArrow(
-              title: 'Payment Methods',
-              subtitle: 'Manage your payment options',
-              onTap: () {},
-            ),
-            PressableMenuItemWithArrow(
               title: 'Help & Support',
               subtitle: 'Get assistance and report issues',
               onTap: () {},
             ),
-            
+
             // Sign Out button
             const SizedBox(height: 16),
             Padding(
@@ -231,6 +300,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
+            MyBannerAdWidget(adSize: AdSize.banner),
           ],
         ),
       ),

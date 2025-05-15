@@ -7,7 +7,7 @@ import 'package:ai_chat_app/features/model/prompt.dart';
 class PromptManage{
     final String baseUrl = 'https://api.dev.jarvis.cx';
 
-    Future<void> createPrompt({
+    Future<bool> createPrompt({
       required String title,
       required String content,
       required String description,
@@ -29,21 +29,23 @@ class PromptManage{
 
         final uri = Uri.parse('$baseUrl/api/v1/prompts');
 
-        var request = http.Request('POST', uri);
-        request.headers.addAll(headers);
-        request.body = jsonEncode({
+        final response = await http.post(
+          uri,
+          headers: headers,
+          body: jsonEncode({
             'title': title,
             'content': content,
             'description': description,
             'isPublic': isPublic,
             'isFavorite': isFavorite,
-        });
-
-        var response = await request.send();
-        if (response.statusCode == 200) {
-            debugPrint('Prompt created successfully');
+          }),
+        );
+        if (response.statusCode == 201) {
+            print('Prompt created successfully');
+            return true;
         } else {
-            throw Exception('Failed to create prompt');
+            print('Error: ${response.reasonPhrase}');
+            return false;
         }
     }
 
@@ -107,7 +109,7 @@ class PromptManage{
         }
     }
 
-    Future<void> updatePrompt({
+    Future<bool> updatePrompt({
       required String id,
       required String title,
       required String content,
@@ -145,12 +147,14 @@ class PromptManage{
         var response = await request.send();
         if (response.statusCode == 200) {
             debugPrint('Prompt updated successfully');
+            return true;
         } else {
-            throw Exception('Failed to update prompt');
+            print('Error: ${response.reasonPhrase}');
+            return false;
         }
     }
 
-    Future<void> deletePrompt(String id) async {
+    Future<bool> deletePrompt(String id) async {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         final String? accessToken = prefs.getString('access_token');
         
@@ -170,9 +174,11 @@ class PromptManage{
 
         var response = await request.send();
         if (response.statusCode == 200) {
-            debugPrint('Prompt deleted successfully');
+            print('Prompt deleted successfully');
+            return true;
         } else {
-            throw Exception('Failed to delete prompt');
+            print('Error: ${response.reasonPhrase}');
+            return false;
         }
     }
 
@@ -195,7 +201,7 @@ class PromptManage{
           uri,
           headers: headers,
         );
-        if (response.statusCode == 200) {
+        if (response.statusCode == 201) {
             print('Prompt added to favorites successfully');
             return true;
         } else {
